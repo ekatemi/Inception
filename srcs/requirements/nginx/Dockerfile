@@ -1,23 +1,24 @@
 FROM debian:bookworm
 
-#switch off install questions
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt get update && apt get install -y nginx openssl
-RUN mkdir -p /etc/ssl/private /etc/ssl/certs
+RUN apt-get update && apt-get install -y \
+    nginx openssl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Генерация self-signed сертификатов, если их нет
-RUN if [ ! -f /etc/ssl/certs/cert.pem ] || [ ! -f /etc/ssl/private/key.pem ]; then \
-        openssl req -x509 -nodes -days 365 \
-        -newkey rsa:2048 \
-        -keyout /etc/ssl/private/key.pem \
-        -out /etc/ssl/certs/cert.pem \
-        -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=wil/CN=wil.42.fr"; \
-    fi
+# SSL directory required for 42
+RUN mkdir -p /etc/ssl/certs /etc/ssl/private
+
+# Generate SSL certificate if not exist
+RUN openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
+    -keyout /etc/ssl/private/inception.key \
+    -out /etc/ssl/certs/inception.crt \
+    -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Cadet/CN=${DOMAIN_NAME}"
 
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-COPY conf/ssl/ /etc/ssl/
 
 EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]
+

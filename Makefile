@@ -1,15 +1,17 @@
 NAME = inception
+COMPOSE = ./srcs/docker-compose.yml
 
-all: up
+#all: up
 
 up:
-	docker-compose -f srcs/docker-compose.yml up -d --build
+	docker compose -f $(COMPOSE) up -d --build
 
 down:
-	docker-compose -f srcs/docker-compose.yml down
+	docker compose -f $(COMPOSE) down
 
 clean: down
 	docker system prune -af --volumes
+
 
 re: clean all
 
