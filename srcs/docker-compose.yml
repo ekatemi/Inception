@@ -3,7 +3,7 @@ services:
     build: requirements/mariadb
     container_name: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password.txt
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
       MYSQL_DATABASE: ${MYSQL_DATABASE}       # из .env
       MYSQL_USER: ${MYSQL_USER}               # из .env
       MYSQL_PASSWORD_FILE: /run/secrets/db_password.txt
@@ -12,6 +12,9 @@ services:
     networks:
       - inception
     restart: always
+    secrets:
+      - db_root_password
+      - db_password
 
   wordpress:
     build: ./requirements/wordpress
@@ -64,6 +67,6 @@ networks:
 
 secrets:
   db_root_password:
-    file: ../secrets/db_root_password.txt
+    file: /mnt/share/secrets/db_root_password.txt
   db_password:
-    file: ../secrets/db_password.txt
+    file: /mnt/share/secrets/db_password.txt
