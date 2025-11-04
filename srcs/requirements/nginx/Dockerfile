@@ -6,6 +6,9 @@ RUN apt-get update && apt-get install -y \
     nginx openssl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Create nginx user & group
+RUN groupadd -r nginx && useradd -r -g nginx nginx
+
 # SSL directory required for 42
 RUN mkdir -p /etc/ssl/certs /etc/ssl/private
 
