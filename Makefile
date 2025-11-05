@@ -46,6 +46,10 @@ up: setup-dirs
 	@echo "$(G)Starting all services...$(RES)"
 	$(COMPOSE) up -d
 
+print-login:
+	@echo "LOGIN is [$(LOGIN)]"
+
+
 setup-dirs:
 	mkdir -p /home/emikhayl/data/mariadb
 	mkdir -p /home/emikhayl/data/wordpress
