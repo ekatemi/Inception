@@ -6,36 +6,41 @@ services:
       - .env
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password.txt
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password.txt
       MYSQL_DATABASE: ${MYSQL_DATABASE}       # из .env
       MYSQL_USER: ${MYSQL_USER}               # из .env
-      MYSQL_PASSWORD_FILE: /run/secrets/db_password.txt
+    secrets:
+      - db_password
+      - db_root_password
     volumes:
       - mariadb_data:/var/lib/mysql
-      - /mnt/share/secrets/db_password.txt:/run/secrets/db_password.txt:ro
-      - /mnt/share/secrets/db_password.txt:/run/secrets/db_root_password.txt:ro
+      - ../secrets/db_password.txt:/run/secrets/db_password:ro
+      - ../secrets/db_root_password.txt:/run/secrets/db_root_password:ro
     networks:
       - inception
-    restart: always
-
+    restart: unless-stopped
 
   wordpress:
-    build: ./requirements/wordpress
+    build: requirements/wordpress
     container_name: wordpress
     depends_on:
       - mariadb
-    env_file:
-      - .env
     environment:
       WORDPRESS_DB_HOST: mariadb:3306
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}    # из .env
-      WORDPRESS_DB_USER: ${MYSQL_USER}        # из .env
-      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password.txt
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_URL: ${WORDPRESS_URL}
+      WORDPRESS_TITLE: ${WORDPRESS_TITLE}
+      WORDPRESS_ADMIN_USER: ${WORDPRESS_ADMIN_USER}
+      WORDPRESS_ADMIN_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
+      WORDPRESS_ADMIN_EMAIL: ${WORDPRESS_ADMIN_EMAIL}
     volumes:
       - wordpress_files:/var/www/html
-      - /mnt/share/secrets/db_password.txt:/run/secrets/db_password.txt:ro
     networks:
       - inception
-    restart: always
+    restart: unless-stopped
+    entrypoint: "/usr/local/bin/entrypoint.sh"
 
 
   nginx:
@@ -49,7 +54,7 @@ services:
       - wordpress_files:/var/www/html
     networks:
       - inception
-    restart: always
+    restart: unless-stopped
 #----VOLUMES
 
 volumes:
@@ -69,3 +74,12 @@ volumes:
 networks:
   inception:
     driver: bridge
+
+#-----SECRETS
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  credentials:
+    file: ../secrets/credentials.txt

@@ -5,8 +5,8 @@ MYSQL_DATADIR="/var/lib/mysql"
 
 # Читаем пароли из Docker secrets
 # (compose монтирует ../secrets -> /run/secrets)
-ROOT_PWD_FILE="/run/secrets/db_root_password.txt"
-DB_PWD_FILE="/run/secrets/db_password.txt"
+ROOT_PWD_FILE="/run/secrets/db_root_password"
+DB_PWD_FILE="/run/secrets/db_password"
 
 # Переменные из .env (env_file подхватится docker-compose)
 : "${MYSQL_DATABASE:?variable not set}"

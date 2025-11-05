@@ -79,7 +79,7 @@ status:
 	@echo "$(B)--- Network ---$(DEF)"
 	@docker network ls | grep srcs_ || echo "No network"
 	@echo "--- Mounted paths in containers ---"
-	@docker inspect mariadb wordpress | grep -E '"Source":| "Destination":'
+	@docker inspect mariadb wordpress | grep -E '"Source":| "Destination":' || true
 
 #----Show docker compose with .env variables
 config:
@@ -101,5 +101,27 @@ clear: clean
 	docker builder prune -af
 
 re: clean all
+
+check-empty:
+	@echo "=== Checking project cleanup ==="
+
+	@echo "\n--- 1. Checking local files and folders ---"
+	@find . -type f \( -name "*.o" -o -name "*.tmp" -o -name "*.log" -o -name "*.pid" \)
+	@echo "\n(If nothing is printed above, no build/temp files remain.)"
+
+	@echo "\n--- 2. Checking Docker containers ---"
+	@docker ps -a --filter "name=mariadb" --filter "name=wordpress" --filter "name=nginx"
+
+	@echo "\n--- 3. Checking Docker images ---"
+	@docker images | grep -E "mariadb|wordpress|nginx|srcs" || echo "No related images found"
+
+	@echo "\n--- 4. Checking Docker volumes ---"
+	@docker volume ls | grep -E "mariadb|wordpress|data|inception" || echo "No related volumes found"
+
+	@echo "\n--- 5. Checking Docker networks ---"
+	@docker network ls | grep inception || echo "No inception network found"
+
+	@echo "\n=== Cleanup check complete ==="
+
 
 PHONY: all up up-debug down build clean clear re ps help restart

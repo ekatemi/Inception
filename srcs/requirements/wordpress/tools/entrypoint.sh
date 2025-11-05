@@ -1,28 +1,32 @@
 #!/bin/bash
-set -e
+#set -e
 
 cd /var/www/html
 
-# Wait for MariaDB
-sleep 5
+# Установка WP-CLI если не установлен
+if [ ! -x /usr/local/bin/wp ]; then
+    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    chmod +x wp-cli.phar
+    mv wp-cli.phar /usr/local/bin/wp
+fi
 
-# Generate wp-config.php
-wp config create \
-    --dbname="$MYSQL_DATABASE" \
-    --dbuser="$MYSQL_USER" \
-    --dbpass="$(cat /run/secrets/db_password.txt)" \
-    --dbhost="$MYSQL_HOST" \
-    --allow-root
+# Если wp-config.php ещё нет, создаём
+if [ ! -f wp-config.php ]; then
+    wp core download --allow-root
+    wp config create \
+        --dbname="${WORDPRESS_DB_NAME}" \
+        --dbuser="${WORDPRESS_DB_USER}" \
+        --dbpass="${WORDPRESS_DB_PASSWORD}" \
+        --dbhost="${WORDPRESS_DB_HOST}" \
+        --allow-root
 
-# Install WordPress (only first run)
-if ! wp core is-installed --allow-root ; then
     wp core install \
-        --url="https://$DOMAIN_NAME" \
-        --title="InceptionWP" \
-        --admin_user="admin" \
-        --admin_password="$(cat /run/secrets/db_root_password.txt)" \
-        --admin_email="admin@example.com" \
+        --url="${WORDPRESS_URL}" \
+        --title="${WORDPRESS_TITLE}" \
+        --admin_user="${WORDPRESS_ADMIN_USER}" \
+        --admin_password="${WORDPRESS_ADMIN_PASSWORD}" \
+        --admin_email="${WORDPRESS_ADMIN_EMAIL}" \
         --allow-root
 fi
 
-exec php-fpm -F
+php-fpm -F
