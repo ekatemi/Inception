@@ -1,10 +1,9 @@
 FROM debian:bookworm
 
-ENV DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update && apt-get install -y \
-    php-fpm php-mysql wget curl mariadb-client \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    php-fpm php-mysql php-curl php-gd php-xml php-mbstring php-zip php-intl php-bcmath \
+    mariadb-client wget curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
 

@@ -46,6 +46,12 @@ up: setup-dirs
 	@echo "$(G)Starting all services...$(RES)"
 	$(COMPOSE) up -d
 
+#only mariadb
+
+mariadb-up: setup-dirs
+	@echo "$(G)Starting MariaDB...$(RES)"
+	$(COMPOSE) up mariadb -d
+
 print-login:
 	@echo "LOGIN is [$(LOGIN)]"
 

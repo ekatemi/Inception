@@ -1,69 +1,38 @@
 #!/bin/bash
-set -euo pipefail
 
-MYSQL_DATADIR="/var/lib/mysql"
+set -e
 
-# Читаем пароли из Docker secrets
-# (compose монтирует ../secrets -> /run/secrets)
-ROOT_PWD_FILE="/run/secrets/db_root_password"
-DB_PWD_FILE="/run/secrets/db_password"
+# Read passwords securely from Docker secrets
+MYSQL_ROOT_PASSWORD=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+MYSQL_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
 
-# Переменные из .env (env_file подхватится docker-compose)
-: "${MYSQL_DATABASE:?variable not set}"
-: "${MYSQL_USER:?variable not set}"
+echo "Root password: $MYSQL_ROOT_PASSWORD"
+echo "Ppassword: $MYSQL_PASSWORD"
 
-ROOT_PWD=""
-DB_PWD=""
+# Initialize database directory if not already
+if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
+    echo "Initializing database..."
+    mysqld_safe --skip-networking &
+    pid="$!"
 
-if [ -f "$ROOT_PWD_FILE" ]; then
-  ROOT_PWD="$(cat "$ROOT_PWD_FILE")"
-fi
-if [ -f "$DB_PWD_FILE" ]; then
-  DB_PWD="$(cat "$DB_PWD_FILE")"
-fi
+    # Wait until mysqld is ready
+    until mysqladmin ping >/dev/null 2>&1; do
+        sleep 1
+    done
 
-# Устанавливаем права на datadir
-mkdir -p "$MYSQL_DATADIR"
-chown -R mysql:mysql "$MYSQL_DATADIR"
-chmod 700 "$MYSQL_DATADIR"
+    # Create database and user
+    cat << EOF | mysql -u root
+CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+FLUSH PRIVILEGES;
+EOF
 
-# Инициализация базы (только при первом запуске)
-if [ ! -d "$MYSQL_DATADIR/mysql" ]; then
-  echo "[MariaDB] Initializing database..."
-  mariadb-install-db --user=mysql --datadir="$MYSQL_DATADIR" > /dev/null
-
-  # Запускаем временно сервер в фоне
-  mysqld_safe --datadir="$MYSQL_DATADIR" --skip-networking &
-
-  # Ждём когда сервер станет доступен (не infinity loop)
-  for i in $(seq 1 30); do
-    if mysqladmin ping >/dev/null 2>&1; then
-      break
-    fi
-    sleep 1
-  done
-
-  # Выполняем начальную настройку: root pwd, база, пользователь
-  # root может быть настроен без пароля через сокет, поэтому выполняем команды напрямую
-  if [ -n "$ROOT_PWD" ]; then
-    mysql -u root <<-SQL
-      ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PWD}';
-      FLUSH PRIVILEGES;
-SQL
-  fi
-
-  mysql -u root ${ROOT_PWD:+-p"${ROOT_PWD}"} <<-SQL
-    CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
-    CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${DB_PWD}';
-    GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
-    FLUSH PRIVILEGES;
-SQL
-
-  # Корректно останавливаем временный сервер
-  mysqladmin -u root ${ROOT_PWD:+-p"${ROOT_PWD}"} shutdown || true
-
-  echo "[MariaDB] Initialization finished."
+    mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
+    wait "$pid"
+    echo "Database initialized successfully."
 fi
 
-# Передаём исполнение основному процессу MariaDB (PID 1)
-exec mysqld_safe --datadir="$MYSQL_DATADIR"
+# Run MariaDB in foreground
+exec mysqld_safe
