@@ -43,4 +43,5 @@ else
     echo "✅ WordPress already installed."
 fi
 
-exec "$(command -v php-fpm8.*)" -F
+echo "🚀 Starting PHP-FPM..."
+exec /usr/sbin/php-fpm8.2 -F

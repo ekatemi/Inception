@@ -13,11 +13,12 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx
 RUN mkdir -p /etc/ssl/certs /etc/ssl/private
 
 # Generate SSL certificate if not exist
-RUN openssl req -x509 -nodes -days 365 \
-    -newkey rsa:2048 \
-    -keyout /etc/ssl/private/inception.key \
-    -out /etc/ssl/certs/inception.crt \
-    -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Cadet/CN=${DOMAIN_NAME}"
+RUN mkdir -p /etc/nginx/ssl && \
+    openssl req -x509 -nodes -days 365 \
+      -subj "/C=ES/ST=Madrid/L=Madrid/O=42/CN=emikhayl.42.fr" \
+      -newkey rsa:2048 \
+      -keyout /etc/nginx/ssl/emikhayl.42.fr.key \
+      -out /etc/nginx/ssl/emikhayl.42.fr.crt
 
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 
