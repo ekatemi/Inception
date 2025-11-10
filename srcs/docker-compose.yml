@@ -41,6 +41,7 @@ services:
       - inception
     restart: unless-stopped
     entrypoint: "/usr/local/bin/entrypoint.sh"
+    command: ["php-fpm8.2", "-F"]
 
 
   nginx:
