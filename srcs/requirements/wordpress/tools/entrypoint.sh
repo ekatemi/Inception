@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+# --- Configure PHP-FPM to listen on 0.0.0.0:9000 instead of socket ---
+
+PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
+CONF_FILE="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
+
+if grep -q "listen = /run/php/php" "$CONF_FILE"; then
+  echo "🔧 Updating PHP-FPM listen directive in $CONF_FILE"
+  sed -i "s|listen = /run/php/php.*-fpm.sock|listen = 0.0.0.0:9000|" "$CONF_FILE"
+else
+  echo "✅ PHP-FPM already configured for TCP port 9000"
+fi
+
 if [ -f "$WORDPRESS_DB_PASSWORD_FILE" ]; then
   WORDPRESS_DB_PASSWORD=$(cat "$WORDPRESS_DB_PASSWORD_FILE")
 fi
