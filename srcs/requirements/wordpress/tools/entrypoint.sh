@@ -43,5 +43,11 @@ else
     echo "✅ WordPress already installed."
 fi
 
+# Install and activate a theme automatically
+if ! wp theme is-installed astra --allow-root; then
+    wp theme install astra --activate --allow-root
+    echo "🎨 Theme 'Astra' installed and activated."
+fi
+
 echo "🚀 Starting PHP-FPM..."
 exec /usr/sbin/php-fpm8.2 -F

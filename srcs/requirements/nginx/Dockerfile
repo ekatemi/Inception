@@ -20,7 +20,7 @@ RUN mkdir -p /etc/nginx/ssl && \
       -keyout /etc/nginx/ssl/emikhayl.42.fr.key \
       -out /etc/nginx/ssl/emikhayl.42.fr.crt
 
-COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+COPY /conf/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 443
 

@@ -14,10 +14,11 @@ C	:=	\033[0;36m
 W	:=	\033[0;37m
 
 all: build up
+	@echo "Make help for a list of possible commands\n"
 
 help:
 	@echo "$(B)\n*** Possible commands:\n"
-	@echo "\t config \t\t# Check sintax of docker-compose with .env variables.yml"
+	@echo "\t config \t\t# Check sintax of docker-compose with .env variables"
 	@echo "\t all \t\t# Build all the services"
 	@echo "\t up \t\t# Start all services in detached (background) mode"
 	@echo "\t up-debug \t# Start all services in foreground (debug mode)"
@@ -25,7 +26,6 @@ help:
 	@echo "\t restart \t# reload containers without rebuilding or tearing down networks/volumes."
 	@echo "\t ps \t\t# List all containers (even stopped)"
 	@echo "\t logs \t\t# Show logs of all services"
-	@echo "\t clean \t\t# Remove stopped containers, networks, and volumes"
 	@echo "\t clear \t\t# Clean everything and remove build cache"
 	@echo "\t re \t\t# Clean and rebuild and restart all services"
 	@echo "$(RES)"
@@ -101,12 +101,10 @@ volumes-clean:
 clean: down
 	@echo "$(Y)Cleaning system (containers, networks, volumes, dangling images)...$(RES)"
 	docker system prune -af --volumes
-
-clear: clean
 	@echo "$(Y)Clearing Docker builder cache...$(RES)"
 	docker builder prune -af
 
-re: clean all
+re: volumes-clean clean all
 
 check-empty:
 	@echo "=== Checking project cleanup ==="

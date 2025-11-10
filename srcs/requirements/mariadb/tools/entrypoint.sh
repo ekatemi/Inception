@@ -6,9 +6,6 @@ set -e
 MYSQL_ROOT_PASSWORD=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
 MYSQL_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
 
-echo "Root password: $MYSQL_ROOT_PASSWORD"
-echo "Ppassword: $MYSQL_PASSWORD"
-
 # Initialize database directory if not already
 if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
     echo "Initializing database..."

@@ -3,10 +3,6 @@
 # Прерываем при ошибке
 set -e
 
-#!/bin/bash
-
-set -e
-
 echo "🔹 Updating packages..."
 sudo apt-get update
 
