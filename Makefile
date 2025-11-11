@@ -93,7 +93,7 @@ config:
 
 #---------------------------------------------------------------
 
-volumes-clean:
+fclean: clean
 	@echo "$(Y)Removing Docker volumes for project $(COMPOSE_PROJECT_NAME)...$(RES)"
 	docker compose -f ./srcs/docker-compose.yml down -v
 

@@ -33,8 +33,10 @@ services:
       WORDPRESS_ADMIN_USER: ${WORDPRESS_ADMIN_USER}
       WORDPRESS_ADMIN_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
       WORDPRESS_ADMIN_EMAIL: ${WORDPRESS_ADMIN_EMAIL}
+      CRED_FILE: /run/secrets/credentials
     secrets:
       - db_password
+      - credentials
     volumes:
       - wordpress_files:/var/www/html
     networks:

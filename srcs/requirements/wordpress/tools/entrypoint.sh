@@ -55,6 +55,29 @@ else
     echo "✅ WordPress already installed."
 fi
 
+if [ -f "$CRED_FILE" ]; then
+    echo "🔐 Found credentials secret, creating WordPress user..."
+    USERNAME=$(sed -n '1p' "$CRED_FILE")
+    USERPASS=$(sed -n '2p' "$CRED_FILE")
+    USEREMAIL=$(sed -n '3p' "$CRED_FILE")
+
+    echo "   → USERNAME: $USERNAME"
+    echo "   → EMAIL: $USEREMAIL"
+    echo "   → PASSWORD: [hidden, ${#USERPASS} chars]"
+
+    if ! wp user get "$USERNAME" --field=ID --allow-root >/dev/null 2>&1; then
+        wp user create "$USERNAME" "$USEREMAIL" \
+            --user_pass="$USERPASS" \
+            --role=author \
+            --display_name="$USERNAME" \
+            --allow-root
+        echo "✅ Created user '$USERNAME' (${USEREMAIL})"
+    else
+        echo "ℹ️  User '$USERNAME' already exists, skipping."
+    fi
+else
+    echo "⚠️ No credentials secret found, skipping user creation."
+fi
 
 echo "🚀 Starting PHP-FPM..."
 exec "$@"
