@@ -104,7 +104,7 @@ clean: down
 	@echo "$(Y)Clearing Docker builder cache...$(RES)"
 	docker builder prune -af
 
-re: fclean clean all
+re: fclean all
 
 check-empty:
 	@echo "=== Checking project cleanup ==="
