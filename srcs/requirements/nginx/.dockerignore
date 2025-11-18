@@ -1,0 +1,5 @@
+# Ignore local config and editor files
+.git
+.vscode
+.idea
+.DS_Store

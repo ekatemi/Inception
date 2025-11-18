@@ -1,0 +1,38 @@
+# ─────────────────────────────
+# 🧱 BASIC IGNORES
+# ─────────────────────────────
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+
+# ─────────────────────────────
+# 💻 IDE & OS FILES
+# ─────────────────────────────
+.vscode
+.idea
+.DS_Store
+
+# ─────────────────────────────
+# 🗑️ LOGS & CACHES
+# ─────────────────────────────
+*.log
+tmp/
+cache/
+
+# ─────────────────────────────
+# 🖼️ WORDPRESS CONTENT
+# ─────────────────────────────
+# Ignore user content
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+
+# ─────────────────────────────
+# 🔒 SECRETS & ENV
+# ─────────────────────────────
+.env
+*.pem
+*.key
+*.crt

@@ -9,7 +9,8 @@ MYSQL_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
 # Initialize database directory if not already
 if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
     echo "Initializing database..."
-    mysqld_safe --skip-networking &
+
+    mysqld_safe --skip-networking --user=mysql &
     pid="$!"
 
     # Wait until mysqld is ready
@@ -18,7 +19,7 @@ if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
     done
 
     # Create database and user
-    cat << EOF | mysql -u root
+    cat << EOF | mysql --protocol=socket -u root
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
@@ -26,10 +27,13 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 FLUSH PRIVILEGES;
 EOF
 
-    mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
+    mysqladmin --protocol=socket -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
     wait "$pid"
     echo "Database initialized successfully."
 fi
 
 # Run MariaDB in foreground
-exec mysqld_safe
+exec mysqld_safe --user=mysql \
+    --bind-address=0.0.0.0 \
+    --character-set-server=utf8mb4 \
+    --collation-server=utf8mb4_general_ci

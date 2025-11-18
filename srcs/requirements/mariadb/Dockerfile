@@ -1,14 +1,12 @@
 FROM debian:bookworm
 
 # Switch off interactive prompts
-#ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y mariadb-server && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 
-# Copy config file
-COPY tools/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Copy entrypoint script
 COPY tools/entrypoint.sh /usr/local/bin/
@@ -21,4 +19,3 @@ EXPOSE 3306
 VOLUME ["/var/lib/mysql"]
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["mysqld_safe"]
