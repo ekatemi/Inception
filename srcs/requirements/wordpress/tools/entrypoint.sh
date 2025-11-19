@@ -1,9 +1,8 @@
 #!/bin/bash
 set -e
 
-# ──────────────────────────────────────────────
-# 🧩 CONFIGURE PHP-FPM TO LISTEN ON PORT 9000
-# ──────────────────────────────────────────────
+# --- Configure PHP-FPM to listen on 0.0.0.0:9000 instead of socket ---
+
 PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
 CONF_FILE="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
 
@@ -14,47 +13,37 @@ else
   echo "✅ PHP-FPM already configured for TCP port 9000"
 fi
 
-# ──────────────────────────────────────────────
-# 🔐 LOAD PASSWORDS FROM SECRETS
-# ──────────────────────────────────────────────
+#load passwords from secrets
 if [ -f "$WORDPRESS_DB_PASSWORD_FILE" ]; then
   WORDPRESS_DB_PASSWORD=$(cat "$WORDPRESS_DB_PASSWORD_FILE")
 fi
 
 cd /var/www/html
 
-# ──────────────────────────────────────────────
-# 🕒 WAIT FOR MARIADB
-# ──────────────────────────────────────────────
 echo "⏳ Waiting for MariaDB..."
 until mysqladmin ping -h"${WORDPRESS_DB_HOST%%:*}" --silent; do
   sleep 2
 done
 echo "✅ MariaDB is ready!"
 
-# ──────────────────────────────────────────────
-# ⚙️ CREATE CONFIG IF MISSING
-# ──────────────────────────────────────────────
-if [ ! -f wp-config.php ]; then
-    echo "⚙️ Creating wp-config.php..."
+# Если wp-config.php ещё нет, создаём
+if ! wp core is-installed --allow-root 2>/dev/null; then
+    echo "⚙️  Installing WordPress..."
+
+    # Скачиваем WP (если ещё не скачан)
+    if [ ! -f wp-settings.php ]; then
+        wp core download --allow-root
+    fi
+
+    # Создаём wp-config.php
     wp config create \
         --dbname="${WORDPRESS_DB_NAME}" \
         --dbuser="${WORDPRESS_DB_USER}" \
         --dbpass="${WORDPRESS_DB_PASSWORD}" \
         --dbhost="${WORDPRESS_DB_HOST}" \
         --allow-root
-fi
 
-# ──────────────────────────────────────────────
-# 🧱 INSTALL WORDPRESS IF NOT INSTALLED
-# ──────────────────────────────────────────────
-if ! wp core is-installed --allow-root 2>/dev/null; then
-    echo "⚙️ Installing WordPress..."
-
-    if [ ! -f wp-settings.php ]; then
-        wp core download --allow-root
-    fi
-
+    # Устанавливаем WordPress
     wp core install \
         --url="${WORDPRESS_URL}" \
         --title="${WORDPRESS_TITLE}" \
@@ -93,9 +82,9 @@ if [ -f "$CRED_FILE" ]; then
 else
     echo "⚠️ No credentials secret found, skipping user creation."
 fi
-
 # ──────────────────────────────────────────────
 # 🚀 START PHP-FPM
 # ──────────────────────────────────────────────
 echo "🚀 Starting PHP-FPM..."
+#exec CMD from dockerfile
 exec "$@"

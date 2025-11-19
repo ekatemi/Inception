@@ -16,7 +16,7 @@ services:
       - mariadb_data:/var/lib/mysql
     networks:
       - inception
-    restart: unless-stopped
+    restart: always
 
   wordpress:
     build: requirements/wordpress
@@ -41,7 +41,7 @@ services:
       - wordpress_files:/var/www/html
     networks:
       - inception
-    restart: unless-stopped
+    restart: always
     entrypoint: "/usr/local/bin/entrypoint.sh"
     command: ["php-fpm8.2", "-F"]
 
@@ -57,7 +57,7 @@ services:
       - wordpress_files:/var/www/html
     networks:
       - inception
-    restart: unless-stopped
+    restart: always
 #----VOLUMES
 
 volumes:

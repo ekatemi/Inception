@@ -9,7 +9,7 @@ MYSQL_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
 # Initialize database directory if not already
 if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
     echo "Initializing database..."
-
+    
     mysqld_safe --skip-networking --user=mysql &
     pid="$!"
 
@@ -19,7 +19,7 @@ if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
     done
 
     # Create database and user
-    cat << EOF | mysql --protocol=socket -u root
+    cat << EOF | mysql -u root
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
@@ -27,7 +27,7 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 FLUSH PRIVILEGES;
 EOF
 
-    mysqladmin --protocol=socket -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
+    mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
     wait "$pid"
     echo "Database initialized successfully."
 fi

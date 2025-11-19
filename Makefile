@@ -95,7 +95,7 @@ config:
 
 fclean: clean
 	@echo "$(Y)Removing Docker volumes for project $(COMPOSE_PROJECT_NAME)...$(RES)"
-	docker compose -f ./srcs/docker-compose.yml down -v
+	docker compose -f ./srcs/docker-compose.yml down -v 
 
 
 clean: down
@@ -105,6 +105,11 @@ clean: down
 	docker builder prune -af
 
 re: fclean all
+
+erase:
+	@echo "$(Y)Removing data folders on host machine$(RES)"
+	sudo rm -rf /home/emikhayl/data/mariadb
+	sudo rm -rf /home/emikhayl/data/wordpress
 
 check-empty:
 	@echo "=== Checking project cleanup ==="
@@ -124,8 +129,14 @@ check-empty:
 
 	@echo "\n--- 5. Checking Docker networks ---"
 	@docker network ls | grep inception || echo "No inception network found"
+	
+	@echo "\n--- 6. Checking folders on host ---"
+	@test -d /home/emikhayl/data/wordpress && echo "wordpress folder still exists" || echo "No wordpress folder found"
+	@test -d /home/emikhayl/data/mariadb && echo "mariadb folder still exists" || echo "No mariadb folder found"
 
+	
+	
 	@echo "\n=== Cleanup check complete ==="
 
 
-PHONY: all up up-debug down build clean fclean re ps help restart
+PHONY: all up up-debug down build clean clear re ps help restart
