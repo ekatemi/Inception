@@ -1,7 +1,8 @@
 FROM debian:bookworm
 
 # Switch off interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    MARIADB_DATA_DIR=/var/lib/mysql
 
 RUN apt-get update && \
     apt-get install -y mariadb-server && \

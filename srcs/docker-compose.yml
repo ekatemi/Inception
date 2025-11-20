@@ -58,6 +58,14 @@ services:
     networks:
       - inception
     restart: always
+
+  redis:
+    build: ./requirements/redis_cache
+    container_name: redis
+    restart: always
+    networks:
+      - inception
+
 #----VOLUMES
 
 volumes:

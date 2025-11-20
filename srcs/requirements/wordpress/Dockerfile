@@ -1,7 +1,7 @@
 FROM debian:bookworm
 
 RUN apt-get update && apt-get install -y \
-    php-fpm php-mysql php-curl php-gd php-xml php-mbstring php-zip php-intl php-bcmath \
+    php-fpm php-mysql php-curl php-gd php-redis php-xml php-mbstring php-zip php-intl php-bcmath \
     mariadb-client wget curl && \
     rm -rf /var/lib/apt/lists/*
 

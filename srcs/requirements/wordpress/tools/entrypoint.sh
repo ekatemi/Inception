@@ -56,6 +56,17 @@ else
     echo "✅ WordPress already installed."
 fi
 
+# 🧠 ENABLE REDIS OBJECT CACHING (ALWAYS RUN)
+# ──────────────────────────────────────────────
+echo "⚙️ Configuring Redis cache..."
+wp config set WP_REDIS_HOST 'redis' --allow-root --quiet
+wp config set WP_REDIS_PORT '6379' --allow-root --quiet
+wp config set WP_CACHE true --allow-root --quiet
+
+wp plugin install redis-cache --activate --allow-root || true
+wp redis enable --allow-root || true
+echo "✅ Redis object cache enabled."
+
 # ──────────────────────────────────────────────
 # 👤 CREATE ADDITIONAL USER (IF SECRET PROVIDED)
 # ──────────────────────────────────────────────

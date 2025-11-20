@@ -7,7 +7,8 @@ MYSQL_ROOT_PASSWORD=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
 MYSQL_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
 
 # Initialize database directory if not already
-if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
+DATADIR="${MARIADB_DATA_DIR}"
+if [ ! -d "${DATADIR}/${MYSQL_DATABASE}" ]; then
     echo "Initializing database..."
     
     mysqld_safe --skip-networking --user=mysql &
@@ -35,5 +36,5 @@ fi
 # Run MariaDB in foreground
 exec mysqld_safe --user=mysql \
     --bind-address=0.0.0.0 \
-    --character-set-server=utf8mb4 \
-    --collation-server=utf8mb4_general_ci
+    #--character-set-server=utf8mb4 \
+    #--collation-server=utf8mb4_general_ci
